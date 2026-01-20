@@ -9,14 +9,14 @@ fn main()
         (2025_12_11, "Rust 3.92.0 released"),
     ];
     
-    //println!("{} events", events.len());
-    //println!("{:#?}", events);
+    println!("{} events", events.len());
+    println!("{:#?}", events);
 
-    //let mut index = 0;
+    let mut index = 0;
 
     for (index, event) in events.iter().enumerate()
     {
-        println!("[{}] {}: {}", index + 1, event.0, event.1);
+        println!("{}: {}", event.0, event.1);
     }
 
     for event in events {
