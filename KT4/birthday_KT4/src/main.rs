@@ -40,6 +40,7 @@ fn get_system_date() -> NaiveDate
     let system_date = NaiveDate::from_ymd_opt(now.year(), now.month(), now.day()) // from_ymd_opt koska cargo ilmoitti että se on uudempi versio jossa on virhe käsittely
         .expect("Virheellinen päivämäärä!");
 
+    println!("System_time: {}-{}-{}", now.year(), now.month(), now.day());
     return system_date;
 }   
 
@@ -47,7 +48,6 @@ fn handle_results(birthday:NaiveDate, system_time: NaiveDate)
 {
     let difference = system_time.signed_duration_since(birthday);
     let age_in_days: i64 =  difference.num_days();
-    
     
     let mut message = match age_in_days 
     {
@@ -68,5 +68,4 @@ fn handle_results(birthday:NaiveDate, system_time: NaiveDate)
     {
         println!("\nAlso happy birthday!");
     }
-
 }
