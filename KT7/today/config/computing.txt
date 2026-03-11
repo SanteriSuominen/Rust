@@ -1,4 +1,0 @@
-# Format: YYYY-MM-DD|description|optional category
-1991-08-25|Linux announced by Linus Torvalds|computing/linux
-1994-03-14|Linux kernel 1.0.0 released|computing/linux
-1977-04-16|Apple II introduced|computing/hardware

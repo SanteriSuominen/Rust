@@ -1,11 +1,17 @@
 use chrono::{Datelike, Local};
 use std::path::Path;
-use today::config::{AppConfig, default_config_path};
+use today::config::{AppConfig, config_file_path};
 use today::events::{Event, MonthDay};
 use today::providers::{EventProvider, FileEventProvider};
 
 fn main() {
-    let config_path = default_config_path();
+    let config_path = match config_file_path() {
+        Ok(path) => path,
+        Err(err) => {
+            eprintln!("Failed to resolve config path: {}", err);
+            return;
+        }
+    };
     let config = match AppConfig::load_default() {
         Ok(config) => config,
         Err(err) => {
