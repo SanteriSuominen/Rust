@@ -1,0 +1,4 @@
+# Format: YYYY-MM-DD|description|optional category
+2015-05-15|Rust 1.0.0 released|programming/rust
+1994-01-03|Python 1.0.0 released|programming/python
+2009-11-10|Go announced by Google|programming/go
