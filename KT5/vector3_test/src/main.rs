@@ -1,6 +1,7 @@
 use rand::RngExt;
 use std::thread::sleep;
 use std::time::Duration;
+
 struct Vector2 
 {
     x: u32,
@@ -28,7 +29,8 @@ fn main()
     };
         update_map(&player_position, &target, &grid);
         sleep(Duration::from_millis(100));
-    while true
+
+    while true // ignore
     {
         while player_position.x != target.x || player_position.y != target.y
         {
@@ -60,7 +62,6 @@ fn main()
             update_map(&player_position, &target, &grid);
             sleep(Duration::from_millis(100));
         }
-        println!("Hit");
         let mut rng = rand::rng();
         target.x = rng.random_range(0..=19);
         target.y = rng.random_range(0..=9);
