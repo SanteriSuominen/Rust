@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 use chrono::{Datelike, Local, NaiveDate};
 use std::env;
 
@@ -91,3 +92,14 @@ mod tests {
         assert_eq!(make_message(-1), "Are you from the future?");
     }
 }
+=======
+use crate::events::Event;
+
+pub mod file_provider;
+pub use file_provider::{FileEventProvider, ProviderError};
+
+pub trait EventProvider {
+    fn name(&self) -> String;
+    fn get_events(&self, events: &mut Vec<Event>) -> Result<(), ProviderError>;
+}
+>>>>>>> 24dd8ea67d97c113c73747eb2ab7bb906304006e

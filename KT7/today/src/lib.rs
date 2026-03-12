@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 use std::error::Error;
 
 mod birthday;
@@ -38,3 +39,8 @@ pub fn run() -> Result<(), Box<dyn Error>> {
 
     Ok(())
 }
+=======
+pub mod config;
+pub mod events;
+pub mod providers;
+>>>>>>> 24dd8ea67d97c113c73747eb2ab7bb906304006e

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 use std::fmt;
 
 use chrono::{Datelike, NaiveDate};
@@ -50,6 +51,10 @@ impl fmt::Display for Event {
         )
     }
 }
+=======
+use chrono::{Datelike, NaiveDate};
+use std::fmt;
+>>>>>>> 24dd8ea67d97c113c73747eb2ab7bb906304006e
 
 #[derive(Debug, PartialEq)]
 pub struct MonthDay {
@@ -91,6 +96,24 @@ impl Category {
             secondary: None,
         }
     }
+<<<<<<< HEAD
+=======
+
+    pub fn from_str(s: &str) -> Category {
+        let parts: Vec<&str> = s.split('/').collect();
+        if parts.len() < 2 {
+            Category {
+                primary: parts[0].to_string(),
+                secondary: None,
+            }
+        } else {
+            Category {
+                primary: parts[0].to_string(),
+                secondary: Some(parts[1].to_string()),
+            }
+        }
+    }
+>>>>>>> 24dd8ea67d97c113c73747eb2ab7bb906304006e
 }
 
 impl fmt::Display for Category {
@@ -102,6 +125,7 @@ impl fmt::Display for Category {
     }
 }
 
+<<<<<<< HEAD
 #[cfg(test)]
 mod tests {
     #[test]
@@ -109,3 +133,100 @@ mod tests {
         assert_eq!(1 + 1, 2);
     }
 }
+=======
+#[derive(Debug)]
+pub enum EventKind {
+    Singular(NaiveDate),
+}
+
+#[derive(Debug)]
+pub struct Event {
+    kind: EventKind,
+    description: String,
+    category: Category,
+}
+
+impl Event {
+    pub fn new_singular(date: NaiveDate, description: String, category: Category) -> Self {
+        Event {
+            kind: EventKind::Singular(date),
+            description,
+            category,
+        }
+    }
+
+    pub fn year(&self) -> i32 {
+        match &self.kind {
+            EventKind::Singular(date) => date.year(),
+        }
+    }
+
+    pub fn month_day(&self) -> MonthDay {
+        match &self.kind {
+            EventKind::Singular(date) => MonthDay {
+                month: date.month(),
+                day: date.day(),
+            },
+        }
+    }
+
+    pub fn description(&self) -> &str {
+        &self.description
+    }
+
+    pub fn category(&self) -> &Category {
+        &self.category
+    }
+}
+
+impl fmt::Display for Event {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{}: {} ({})",
+            match &self.kind {
+                EventKind::Singular(date) => date.year(),
+            },
+            self.description,
+            self.category
+        )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_new_with_primary_and_secondary() {
+        let cat = Category::new("programming", "rust");
+
+        assert_eq!(cat.primary, "programming");
+        assert_eq!(cat.secondary, Some("rust".to_string()));
+    }
+
+    #[test]
+    fn test_from_primary_only() {
+        let cat = Category::from_primary("programming");
+
+        assert_eq!(cat.primary, "programming");
+        assert_eq!(cat.secondary, None);
+    }
+
+    #[test]
+    fn test_from_str_with_both_parts() {
+        let cat = Category::from_str("programming/rust");
+
+        assert_eq!(cat.primary, "programming");
+        assert_eq!(cat.secondary, Some("rust".to_string()));
+    }
+
+    #[test]
+    fn test_from_str_primary_only() {
+        let cat = Category::from_str("programming");
+
+        assert_eq!(cat.primary, "programming");
+        assert_eq!(cat.secondary, None);
+    }
+}
+>>>>>>> 24dd8ea67d97c113c73747eb2ab7bb906304006e
