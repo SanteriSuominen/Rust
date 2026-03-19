@@ -15,6 +15,7 @@ use crate::providers::{
     csvfile::CSVFileProvider,
     textfile::TextFileProvider,
     sqlite::SQLiteProvider,
+    web::WebProvider,
 };
 
 #[derive(Deserialize, Debug)]
@@ -34,18 +35,24 @@ fn create_providers(config: &Config, config_path: &Path) -> Vec::<Box<dyn EventP
     // Put them in a vector of trait objects.
     let mut providers: Vec::<Box<dyn EventProvider>> = Vec::new();
     for cfg in config.providers.iter() {
-        let path = config_path.join(&cfg.resource);
         match cfg.kind.as_str() {
             "text" => {
+                let path = config_path.join(&cfg.resource);
                 let provider = TextFileProvider::new(&cfg.name, &path);
                 providers.push(Box::new(provider));
             },
             "csv" => {
+                let path = config_path.join(&cfg.resource);
                 let provider = CSVFileProvider::new(&cfg.name, &path);
                 providers.push(Box::new(provider));
             },
             "sqlite" => {
+                let path = config_path.join(&cfg.resource);
                 let provider = SQLiteProvider::new(&cfg.name, &path);
+                providers.push(Box::new(provider));
+            },
+            "web" => {
+                let provider = WebProvider::new(&cfg.name, &cfg.resource);
                 providers.push(Box::new(provider));
             },
             _ => {
