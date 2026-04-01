@@ -79,7 +79,7 @@ pub fn run(config: &Config, config_path: &Path) -> Result<(), Box<dyn Error>> {
     let providers = create_providers(config, config_path);
     let filter = FilterBuilder::new()
     .month_day(today_month_day.clone())
-    .category(crate::events::Category::from_str("school/programming"))
+    .category(crate::events::Category::from_str("work"))
     .text("Rust")
     .build();
 
