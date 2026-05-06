@@ -1,4 +1,6 @@
 use std::error::Error;
+use std::fs::{self, OpenOptions};
+use std::io::Write;
 use std::path::Path;
 
 pub mod birthday;
@@ -15,7 +17,7 @@ use crate::providers::{
 };
 use events::{Category, Event, MonthDay};
 use filters::FilterBuilder;
-use providers::{EventProvider, SimpleProvider};
+use providers::EventProvider;
 
 #[derive(Deserialize, Debug)]
 pub struct ProviderConfig {
@@ -32,9 +34,11 @@ pub struct Config {
 #[derive(Debug, Clone, Default)]
 pub struct RunOptions {
     pub all: bool,
+    pub no_birthday: bool,
     pub month_day: Option<MonthDay>,
     pub category: Option<Category>,
     pub text: Option<String>,
+    pub excluded_categories: Vec<Category>,
 }
 
 fn create_providers(config: &Config, config_path: &Path) -> Vec<Box<dyn EventProvider>> {
@@ -68,9 +72,6 @@ fn create_providers(config: &Config, config_path: &Path) -> Vec<Box<dyn EventPro
         }
     }
 
-    let test_provider = SimpleProvider::new("test");
-    providers.push(Box::new(test_provider));
-
     providers
 }
 
@@ -94,12 +95,89 @@ pub fn parse_month_day_input(input: &str) -> Result<MonthDay, String> {
     Ok(MonthDay::new(month, day))
 }
 
+pub fn parse_event_date_input(input: &str) -> Result<NaiveDate, String> {
+    NaiveDate::parse_from_str(input, "%F").map_err(|_| "expected YYYY-MM-DD".to_string())
+}
+
+pub fn list_provider_names(config: &Config) -> Vec<String> {
+    config
+        .providers
+        .iter()
+        .map(|provider| provider.name.clone())
+        .collect()
+}
+
+fn append_text_event(
+    path: &Path,
+    date: NaiveDate,
+    description: &str,
+    category: &Category,
+) -> Result<(), Box<dyn Error>> {
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    let mut file = OpenOptions::new().create(true).append(true).open(path)?;
+    writeln!(file, "{}", date.format("%F"))?;
+    writeln!(file, "{}", description)?;
+    writeln!(file, "{}", category)?;
+    writeln!(file, "---")?;
+    Ok(())
+}
+
+fn append_csv_event(
+    path: &Path,
+    date: NaiveDate,
+    description: &str,
+    category: &Category,
+) -> Result<(), Box<dyn Error>> {
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    let file = OpenOptions::new().create(true).append(true).open(path)?;
+    let mut writer = csv::WriterBuilder::new()
+        .has_headers(false)
+        .from_writer(file);
+    writer.write_record([
+        date.format("%F").to_string(),
+        description.to_string(),
+        category.to_string(),
+    ])?;
+    writer.flush()?;
+    Ok(())
+}
+
+pub fn add_event_to_provider(
+    config: &Config,
+    config_path: &Path,
+    provider_name: &str,
+    date: NaiveDate,
+    description: &str,
+    category: &Category,
+) -> Result<(), Box<dyn Error>> {
+    let provider = config
+        .providers
+        .iter()
+        .find(|provider| provider.name == provider_name)
+        .ok_or_else(|| format!("provider '{}' not found in configuration", provider_name))?;
+    let resource_path = config_path.join(&provider.resource);
+
+    match provider.kind.as_str() {
+        "text" => append_text_event(&resource_path, date, description, category),
+        "csv" => append_csv_event(&resource_path, date, description, category),
+        "sqlite" => Err("adding events to sqlite providers is not implemented".into()),
+        "web" => Err("web providers are read-only".into()),
+        _ => Err(format!("unsupported provider kind '{}'", provider.kind).into()),
+    }
+}
+
 pub fn run(
     config: &Config,
     config_path: &Path,
     options: &RunOptions,
 ) -> Result<(), Box<dyn Error>> {
-    handle_birthday();
+    if !options.no_birthday {
+        handle_birthday();
+    }
 
     let mut events: Vec<Event> = Vec::new();
     let providers = create_providers(config, config_path);
@@ -118,6 +196,9 @@ pub fn run(
     }
     if let Some(text) = options.text.as_ref() {
         filter_builder = filter_builder.text(text);
+    }
+    if !options.excluded_categories.is_empty() {
+        filter_builder = filter_builder.exclude_categories(options.excluded_categories.clone());
     }
     let filter = filter_builder.build();
 

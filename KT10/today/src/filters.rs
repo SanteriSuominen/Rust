@@ -5,6 +5,7 @@ pub struct EventFilter {
     month_day: Option<MonthDay>,
     category: Option<Category>,
     text: Option<String>,
+    excluded_categories: Vec<Category>,
 }
 
 impl EventFilter {
@@ -31,6 +32,14 @@ impl EventFilter {
             }
         }
 
+        if self
+            .excluded_categories
+            .iter()
+            .any(|excluded| event.category() == excluded)
+        {
+            return false;
+        }
+
         true
     }
 }
@@ -40,6 +49,7 @@ pub struct FilterBuilder {
     month_day: Option<MonthDay>,
     category: Option<Category>,
     text: Option<String>,
+    excluded_categories: Vec<Category>,
 }
 
 impl FilterBuilder {
@@ -62,11 +72,17 @@ impl FilterBuilder {
         self
     }
 
+    pub fn exclude_categories(mut self, excluded_categories: Vec<Category>) -> Self {
+        self.excluded_categories = excluded_categories;
+        self
+    }
+
     pub fn build(self) -> EventFilter {
         EventFilter {
             month_day: self.month_day,
             category: self.category,
             text: self.text,
+            excluded_categories: self.excluded_categories,
         }
     }
 }
@@ -261,5 +277,31 @@ mod tests {
         assert!(!filter.accepts(&wrong_day));
         assert!(!filter.accepts(&wrong_category));
         assert!(!filter.accepts(&wrong_text));
+    }
+
+    #[test]
+    fn excludes_events_by_category() {
+        let filter = EventFilter::builder()
+            .exclude_categories(vec![
+                Category::from_str("work"),
+                Category::from_str("school/programming"),
+            ])
+            .build();
+        let excluded_work =
+            make_event("2026-03-25", "Team meeting", Category::from_primary("work"));
+        let excluded_school = make_event(
+            "2026-03-25",
+            "Rust workshop",
+            Category::from_str("school/programming"),
+        );
+        let accepted = make_event(
+            "2026-03-25",
+            "Jogging",
+            Category::from_str("personal/health"),
+        );
+
+        assert!(!filter.accepts(&excluded_work));
+        assert!(!filter.accepts(&excluded_school));
+        assert!(filter.accepts(&accepted));
     }
 }
