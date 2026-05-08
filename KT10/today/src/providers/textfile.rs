@@ -83,7 +83,9 @@ impl EventProvider for TextFileProvider {
                             }
                         }
                         Err(_) => {
-                            eprintln!("Invalid date '{}'", date_string);
+                            if !filter.quiet() {
+                                eprintln!("Invalid date '{}'", date_string);
+                            }
                         }
                     }
                     state = ReadingState::Date;

@@ -16,6 +16,8 @@ const CONFIG_FILE_NAME: &str = "today.toml";
 struct Cli {
     #[arg(short = 'a', long = "all", conflicts_with = "date")]
     all: bool,
+    #[arg(short = 'q', long = "quiet")]
+    quiet: bool,
     #[arg(short = 'd', long = "date", value_name = "DATE")]
     date: Option<String>,
     #[arg(short = 'e', long = "exclude", value_name = "EXCLUDE")]
@@ -185,6 +187,7 @@ fn build_run_options(cli: &Cli) -> Result<RunOptions, String> {
 
     Ok(RunOptions {
         all: cli.all,
+        quiet: cli.quiet,
         no_birthday: cli.no_birthday,
         month_day,
         category,

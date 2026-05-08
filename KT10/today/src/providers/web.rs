@@ -40,14 +40,18 @@ impl EventProvider for WebProvider {
         let request = client.get(&url).send();
         let response: Response;
         if request.is_err() {
-            eprintln!("Error while retrieving data: {:#?}", request.err());
+            if !filter.quiet() {
+                eprintln!("Error while retrieving data: {:#?}", request.err());
+            }
             return;
         } else {
             response = request.ok().unwrap();
         }
 
         let json_events = response.json::<Vec<JSONEvent>>().unwrap();
-        println!("Got {} events from JSON", json_events.len());
+        if !filter.quiet() {
+            println!("Got {} events from JSON", json_events.len());
+        }
 
         for json_event in json_events {
             let date = NaiveDate::parse_from_str(&json_event.date, "%F").unwrap();

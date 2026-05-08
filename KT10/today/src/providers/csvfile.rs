@@ -42,7 +42,9 @@ impl EventProvider for CSVFileProvider {
                     }
                 }
                 Err(_) => {
-                    eprintln!("Invalid date '{}'", date_string);
+                    if !filter.quiet() {
+                        eprintln!("Invalid date '{}'", date_string);
+                    }
                 }
             }
         }

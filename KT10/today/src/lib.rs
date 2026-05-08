@@ -34,6 +34,7 @@ pub struct Config {
 #[derive(Debug, Clone, Default)]
 pub struct RunOptions {
     pub all: bool,
+    pub quiet: bool,
     pub no_birthday: bool,
     pub month_day: Option<MonthDay>,
     pub category: Option<Category>,
@@ -41,7 +42,11 @@ pub struct RunOptions {
     pub excluded_categories: Vec<Category>,
 }
 
-fn create_providers(config: &Config, config_path: &Path) -> Vec<Box<dyn EventProvider>> {
+fn create_providers(
+    config: &Config,
+    config_path: &Path,
+    quiet: bool,
+) -> Vec<Box<dyn EventProvider>> {
     // Try to create all the event providers specified in `config`.
     // Put them in a vector of trait objects.
     let mut providers: Vec<Box<dyn EventProvider>> = Vec::new();
@@ -67,7 +72,9 @@ fn create_providers(config: &Config, config_path: &Path) -> Vec<Box<dyn EventPro
                 providers.push(Box::new(provider));
             }
             _ => {
-                eprintln!("Unable to make provider: {:?}", cfg);
+                if !quiet {
+                    eprintln!("Unable to make provider: {:?}", cfg);
+                }
             }
         }
     }
@@ -180,8 +187,8 @@ pub fn run(
     }
 
     let mut events: Vec<Event> = Vec::new();
-    let providers = create_providers(config, config_path);
-    let mut filter_builder = FilterBuilder::new();
+    let providers = create_providers(config, config_path, options.quiet);
+    let mut filter_builder = FilterBuilder::new().quiet(options.quiet);
 
     if !options.all {
         let month_day = options.month_day.clone().unwrap_or_else(|| {
@@ -206,11 +213,13 @@ pub fn run(
     for provider in providers {
         provider.get_events(&filter, &mut events); // polymorphism!
         let new_count = events.len();
-        println!(
-            "Got {} events from provider '{}'",
-            new_count - count,
-            provider.name()
-        );
+        if !options.quiet {
+            println!(
+                "Got {} events from provider '{}'",
+                new_count - count,
+                provider.name()
+            );
+        }
         count = new_count;
     }
 

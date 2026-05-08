@@ -6,6 +6,7 @@ pub struct EventFilter {
     category: Option<Category>,
     text: Option<String>,
     excluded_categories: Vec<Category>,
+    quiet: bool,
 }
 
 impl EventFilter {
@@ -42,6 +43,10 @@ impl EventFilter {
 
         true
     }
+
+    pub fn quiet(&self) -> bool {
+        self.quiet
+    }
 }
 
 #[derive(Debug, Clone, Default)]
@@ -50,6 +55,7 @@ pub struct FilterBuilder {
     category: Option<Category>,
     text: Option<String>,
     excluded_categories: Vec<Category>,
+    quiet: bool,
 }
 
 impl FilterBuilder {
@@ -77,12 +83,18 @@ impl FilterBuilder {
         self
     }
 
+    pub fn quiet(mut self, quiet: bool) -> Self {
+        self.quiet = quiet;
+        self
+    }
+
     pub fn build(self) -> EventFilter {
         EventFilter {
             month_day: self.month_day,
             category: self.category,
             text: self.text,
             excluded_categories: self.excluded_categories,
+            quiet: self.quiet,
         }
     }
 }
